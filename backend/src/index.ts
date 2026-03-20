@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { AppDataSource } from "./config/database";
+import authRoutes from "./routes/authRoutes";
 
 dotenv.config();
 
@@ -28,8 +29,9 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Routes
+app.use("/api/auth", authRoutes);
 // TODO: Routes will be added per feature branch
-// app.use("/api/auth", authRoutes);
 // app.use("/api/children", childRoutes);
 // app.use("/api/proposals", proposalRoutes);
 // app.use("/api/home-visits", homeVisitRoutes);

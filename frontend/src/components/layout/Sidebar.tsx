@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard,
   Baby,
@@ -43,6 +44,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const toggleExpand = (label: string) => {
@@ -141,7 +143,10 @@ export default function Sidebar() {
 
       {/* Logout */}
       <div className="border-t border-border p-3">
-        <button className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+        <button
+          onClick={logout}
+          className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+        >
           <LogOut className="h-5 w-5" />
           <span>Logout</span>
         </button>
