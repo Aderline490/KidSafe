@@ -27,7 +27,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  register: (data: RegisterData, redirectTo?: string) => Promise<void>;
   logout: () => void;
   updateUser: (user: User) => void;
 }
@@ -42,6 +42,7 @@ interface RegisterData {
   address?: string;
   dateOfBirth?: string;
   region?: string;
+  nationalId?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/overview");
   };
 
-  const register = async (data: RegisterData) => {
+  const register = async (data: RegisterData, redirectTo = "/overview") => {
     const response = await api.post("/auth/register", data);
     const { token: newToken, user: userData } = response.data;
 
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
-    router.push("/overview");
+    router.push(redirectTo);
   };
 
   const logout = () => {

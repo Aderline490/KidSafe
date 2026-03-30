@@ -11,8 +11,12 @@ import {
 } from "../utils/jwt";
 import { sendEmail } from "../config/email";
 import { AuthRequest } from "../middleware/auth";
+import { Invite } from "../entities/Invite";
+import { Proposal } from "../entities/Proposal";
 
 const userRepo = () => AppDataSource.getRepository(User);
+const inviteRepo = () => AppDataSource.getRepository(Invite);
+const proposalRepo = () => AppDataSource.getRepository(Proposal);
 
 // POST /api/auth/register
 export const register = async (
@@ -26,7 +30,7 @@ export const register = async (
       return;
     }
 
-    const { email, password, firstName, lastName, role, phone, address, dateOfBirth, region } = req.body;
+    const { email, password, firstName, lastName, phone, address, dateOfBirth, region } = req.body;
 
     // Check if user already exists
     const existingUser = await userRepo().findOne({ where: { email } });
@@ -35,24 +39,17 @@ export const register = async (
       return;
     }
 
-    // Validate role
-    const allowedRoles = Object.values(UserRole);
-    if (!allowedRoles.includes(role)) {
-      res.status(400).json({ message: "Invalid role" });
-      return;
-    }
-
     // Hash password
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Public registration always defaults to adoptive_family
     const user = userRepo().create({
       email,
       passwordHash,
       firstName,
       lastName,
-      role,
+      role: UserRole.ADOPTIVE_FAMILY,
       phone,
       address,
       dateOfBirth,
@@ -310,6 +307,94 @@ export const resetPassword = async (
     res.json({ message: "Password reset successful" });
   } catch (error) {
     res.status(400).json({ message: "Invalid or expired reset token" });
+  }
+};
+
+// POST /api/auth/register-staff  — Staff registration via invite token
+export const registerStaff = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
+    const { inviteToken, password, firstName, lastName, phone, region } = req.body;
+
+    if (!inviteToken) {
+      res.status(400).json({ message: "Invite token is required" });
+      return;
+    }
+
+    // Validate invite
+    const invite = await inviteRepo().findOne({ where: { token: inviteToken } });
+
+    if (!invite) {
+      res.status(400).json({ message: "Invalid invite link" });
+      return;
+    }
+    if (invite.isUsed) {
+      res.status(400).json({ message: "This invite has already been used" });
+      return;
+    }
+    if (invite.isExpired) {
+      res.status(400).json({ message: "This invite link has expired" });
+      return;
+    }
+
+    // Check email not already taken
+    const existingUser = await userRepo().findOne({ where: { email: invite.email } });
+    if (existingUser) {
+      res.status(400).json({ message: "An account with this email already exists" });
+      return;
+    }
+
+    // Hash password & create staff user
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const user = userRepo().create({
+      email: invite.email,
+      passwordHash,
+      firstName,
+      lastName,
+      role: invite.role,
+      phone,
+      region,
+      isEmailVerified: true, // invited users are pre-verified
+    });
+
+    await userRepo().save(user);
+
+    // Link any proposals submitted under this email to the new family account
+    if (invite.role === UserRole.ADOPTIVE_FAMILY) {
+      await proposalRepo().update({ applicantEmail: invite.email }, { familyId: user.id });
+    }
+
+    // Mark invite as used
+    invite.usedAt = new Date();
+    await inviteRepo().save(invite);
+
+    const token = generateToken(user.id, user.role);
+
+    res.status(201).json({
+      message: "Staff account created successfully",
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified,
+      },
+    });
+  } catch (error) {
+    console.error("Staff registration error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

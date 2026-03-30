@@ -39,6 +39,9 @@ export class User {
   @Column({ nullable: true })
   phone?: string;
 
+  @Column({ nullable: true, length: 16 })
+  nationalId?: string;
+
   @Column({ nullable: true })
   address?: string;
 

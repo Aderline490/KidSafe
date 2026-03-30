@@ -57,7 +57,6 @@ export default function RegisterPage() {
       setError("Passwords do not match");
       return;
     }
-
     if (formData.password.length < 8) {
       setError("Password must be at least 8 characters");
       return;
@@ -69,7 +68,6 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
-
     try {
       await register({
         firstName: formData.firstName,
@@ -231,9 +229,22 @@ export default function RegisterPage() {
           </Button>
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline font-medium">
+            <Link
+              href="/login"
+              className="text-primary hover:underline font-medium"
+            >
               Sign in
             </Link>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Want to adopt a child?{" "}
+            <Link
+              href="/explore"
+              className="text-primary hover:underline font-medium"
+            >
+              Browse children
+            </Link>{" "}
+            — no account needed to apply.
           </p>
         </CardFooter>
       </form>
