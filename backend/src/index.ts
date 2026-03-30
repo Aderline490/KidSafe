@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { AppDataSource } from "./config/database";
 import authRoutes from "./routes/authRoutes";
+import inviteRoutes from "./routes/inviteRoutes";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.get("/api/health", (_req, res) => {
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/admin/invites", inviteRoutes);
 // TODO: Routes will be added per feature branch
 // app.use("/api/children", childRoutes);
 // app.use("/api/proposals", proposalRoutes);

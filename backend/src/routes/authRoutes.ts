@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   register,
+  registerStaff,
   login,
   getMe,
   verifyEmail,
@@ -8,6 +9,7 @@ import {
   resetPassword,
   updateProfile,
 } from "../controllers/authController";
+import { verifyInvite } from "../controllers/inviteController";
 import { authenticate } from "../middleware/auth";
 import {
   registerValidation,
@@ -20,6 +22,8 @@ const router = Router();
 
 // Public routes
 router.post("/register", registerValidation, register);
+router.post("/register-staff", registerValidation, registerStaff);
+router.get("/verify-invite", verifyInvite);
 router.post("/login", loginValidation, login);
 router.post("/verify-email", verifyEmail);
 router.post("/forgot-password", forgotPasswordValidation, forgotPassword);

@@ -10,21 +10,27 @@ import {
   BarChart3,
   LogOut,
   ChevronRight,
+  Users,
+  ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  {
-    label: "Overview",
-    href: "/overview",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Kids",
-    href: "/kids",
-    icon: Baby,
-  },
+interface NavChild {
+  label: string;
+  href: string;
+}
+
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children?: NavChild[];
+}
+
+const baseNavItems: NavItem[] = [
+  { label: "Overview", href: "/overview", icon: LayoutDashboard },
+  { label: "Kids", href: "/kids", icon: Baby },
   {
     label: "Requests",
     href: "/requests",
@@ -35,17 +41,22 @@ const navItems = [
       { label: "Approvals", href: "/requests/approvals" },
     ],
   },
-  {
-    label: "Reports",
-    href: "/reports",
-    icon: BarChart3,
-  },
+  { label: "Reports", href: "/reports", icon: BarChart3 },
+];
+
+const adminNavItems: NavItem[] = [
+  { label: "Staff", href: "/staff", icon: Users },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  const isAdmin = user?.role === "system_admin";
+  const navItems = isAdmin
+    ? [...baseNavItems, ...adminNavItems]
+    : baseNavItems;
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
@@ -64,12 +75,19 @@ export default function Sidebar() {
         </Link>
       </div>
 
+      {/* Admin badge */}
+      {isAdmin && (
+        <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <span className="text-xs font-semibold text-primary">System Admin</span>
+        </div>
+      )}
+
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href ||
-            pathname.startsWith(item.href + "/");
+            pathname === item.href || pathname.startsWith(item.href + "/");
           const isExpanded = expandedItems.includes(item.label);
           const Icon = item.icon;
 
@@ -114,7 +132,6 @@ export default function Sidebar() {
                 )}
               </div>
 
-              {/* Sub-items */}
               {item.children && isExpanded && (
                 <div className="ml-8 mt-1 space-y-1">
                   {item.children.map((child) => {
@@ -141,8 +158,16 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="border-t border-border p-3">
+      {/* User info + Logout */}
+      <div className="border-t border-border p-3 space-y-1">
+        {user && (
+          <div className="px-4 py-2">
+            <p className="text-sm font-semibold text-foreground truncate">
+              {user.firstName} {user.lastName}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          </div>
+        )}
         <button
           onClick={logout}
           className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-sidebar-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
