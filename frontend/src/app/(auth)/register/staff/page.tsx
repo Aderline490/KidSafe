@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,14 +14,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle, XCircle } from "lucide-react";
 
-export default function RegisterPage() {
-  const { register } = useAuth();
+const ROLE_LABELS: Record<string, string> = {
+  social_worker: "Social Worker",
+  orphanage_admin: "Orphanage Administrator",
+  district_commissioner: "District Commissioner",
+  ncda_official: "NCDA Official",
+  system_admin: "System Administrator",
+};
+
+function StaffRegisterForm() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const inviteToken = searchParams.get("token");
+
+  const [invite, setInvite] = useState<{ email: string; role: string } | null>(null);
+  const [inviteError, setInviteError] = useState("");
+  const [isVerifying, setIsVerifying] = useState(true);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
     password: "",
     confirmPassword: "",
     phone: "",
@@ -28,6 +43,27 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Verify invite token on mount
+  useEffect(() => {
+    if (!inviteToken) {
+      setInviteError("No invite token provided.");
+      setIsVerifying(false);
+      return;
+    }
+
+    api
+      .get(`/auth/verify-invite?token=${inviteToken}`)
+      .then((res) => {
+        setInvite({ email: res.data.email, role: res.data.role });
+      })
+      .catch((err) => {
+        setInviteError(
+          err.response?.data?.message || "Invalid or expired invite link."
+        );
+      })
+      .finally(() => setIsVerifying(false));
+  }, [inviteToken]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -48,31 +84,67 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      await register({
+      const res = await api.post("/auth/register-staff", {
+        inviteToken,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
         password: formData.password,
-        role: "adoptive_family",
         phone: formData.phone || undefined,
       });
+
+      const { token, user } = res.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      router.push("/overview");
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
+      setError(err.response?.data?.message || "Registration failed.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (isVerifying) {
+    return (
+      <Card className="shadow-lg border-0">
+        <CardContent className="py-12 flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground text-sm">Verifying invite...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (inviteError) {
+    return (
+      <Card className="shadow-lg border-0">
+        <CardContent className="py-12 flex flex-col items-center gap-4 text-center">
+          <XCircle className="h-10 w-10 text-destructive" />
+          <h2 className="font-bold text-lg">Invalid Invite</h2>
+          <p className="text-muted-foreground text-sm">{inviteError}</p>
+          <Link href="/login">
+            <Button variant="outline">Go to Login</Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-lg border-0">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+        <div className="mx-auto mb-2 flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+          <CheckCircle className="h-5 w-5 text-primary" />
+        </div>
+        <CardTitle className="text-2xl font-bold">Complete Your Account</CardTitle>
         <p className="text-muted-foreground text-sm">
-          Join KidSafe to get started
+          You&apos;ve been invited as{" "}
+          <span className="font-semibold text-primary">
+            {ROLE_LABELS[invite!.role] || invite!.role}
+          </span>
         </p>
+        <p className="text-xs text-muted-foreground mt-1">{invite!.email}</p>
       </CardHeader>
+
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           {error && (
@@ -107,19 +179,6 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="john@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="phone">Phone (optional)</Label>
             <Input
               id="phone"
@@ -148,11 +207,7 @@ export default function RegisterPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -180,33 +235,34 @@ export default function RegisterPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                Setting up account...
               </>
             ) : (
-              "Create Account"
+              "Complete Registration"
             )}
           </Button>
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link
-              href="/login"
-              className="text-primary hover:underline font-medium"
-            >
+            <Link href="/login" className="text-primary hover:underline font-medium">
               Sign in
             </Link>
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Want to adopt a child?{" "}
-            <Link
-              href="/explore"
-              className="text-primary hover:underline font-medium"
-            >
-              Browse children
-            </Link>{" "}
-            — no account needed to apply.
           </p>
         </CardFooter>
       </form>
     </Card>
+  );
+}
+
+export default function StaffRegisterPage() {
+  return (
+    <Suspense fallback={
+      <Card className="shadow-lg border-0">
+        <CardContent className="py-12 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    }>
+      <StaffRegisterForm />
+    </Suspense>
   );
 }
