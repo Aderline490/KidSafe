@@ -134,8 +134,8 @@ export default function KidsPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleFilterChange = (setter: (v: string) => void) => (v: string) => {
-    setter(v);
+  const handleFilterChange = (setter: (v: string) => void) => (v: string | null) => {
+    setter(v ?? "all");
     setPage(1);
   };
 
