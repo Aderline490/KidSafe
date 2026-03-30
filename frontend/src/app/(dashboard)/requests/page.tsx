@@ -305,7 +305,7 @@ export default function RequestsPage() {
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <SlidersHorizontal className="h-4 w-4" /> Filter:
         </div>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
+        <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v ?? "all")}>
           <SelectTrigger className="w-52">
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>

@@ -134,8 +134,8 @@ export default function KidsPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const handleFilterChange = (setter: (v: string) => void) => (v: string) => {
-    setter(v);
+  const handleFilterChange = (setter: (v: string) => void) => (v: string | null) => {
+    setter(v ?? "all");
     setPage(1);
   };
 
@@ -298,8 +298,8 @@ export default function KidsPage() {
                     <p className="text-xs text-muted-foreground truncate">{c.district}</p>
                   </div>
                   <div className="flex items-center gap-1.5 mt-2">
-                    {c.isInSchool && <School className="h-3 w-3 text-blue-500" title="In school" />}
-                    {c.hasInsurance && <Shield className="h-3 w-3 text-green-500" title="Has insurance" />}
+                    {c.isInSchool && <School className="h-3 w-3 text-blue-500" />}
+                    {c.hasInsurance && <Shield className="h-3 w-3 text-green-500" />}
                   </div>
                 </div>
               </div>

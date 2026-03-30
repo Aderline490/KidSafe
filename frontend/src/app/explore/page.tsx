@@ -120,7 +120,7 @@ function ExploreContent() {
               <label className="text-xs text-gray-500 mb-1 block">District</label>
               <Select
                 value={filters.district}
-                onValueChange={(v) => setFilters((f) => ({ ...f, district: v }))}
+                onValueChange={(v) => setFilters((f) => ({ ...f, district: v ?? "" }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Any district" />
@@ -137,7 +137,7 @@ function ExploreContent() {
               <label className="text-xs text-gray-500 mb-1 block">Gender</label>
               <Select
                 value={filters.gender}
-                onValueChange={(v) => setFilters((f) => ({ ...f, gender: v }))}
+                onValueChange={(v) => setFilters((f) => ({ ...f, gender: v ?? "" }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Any gender" />
