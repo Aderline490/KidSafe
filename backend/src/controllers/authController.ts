@@ -12,9 +12,11 @@ import {
 import { sendEmail } from "../config/email";
 import { AuthRequest } from "../middleware/auth";
 import { Invite } from "../entities/Invite";
+import { Proposal } from "../entities/Proposal";
 
 const userRepo = () => AppDataSource.getRepository(User);
 const inviteRepo = () => AppDataSource.getRepository(Invite);
+const proposalRepo = () => AppDataSource.getRepository(Proposal);
 
 // POST /api/auth/register
 export const register = async (
@@ -366,6 +368,11 @@ export const registerStaff = async (
     });
 
     await userRepo().save(user);
+
+    // Link any proposals submitted under this email to the new family account
+    if (invite.role === UserRole.ADOPTIVE_FAMILY) {
+      await proposalRepo().update({ applicantEmail: invite.email }, { familyId: user.id });
+    }
 
     // Mark invite as used
     invite.usedAt = new Date();

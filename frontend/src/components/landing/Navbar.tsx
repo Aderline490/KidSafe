@@ -35,8 +35,14 @@ export default function Navbar() {
         ))}
       </div>
 
-      {/* Login Button */}
-      <div className="hidden md:block">
+      {/* CTA buttons */}
+      <div className="hidden md:flex items-center gap-3">
+        <Link
+          href="/track"
+          className="px-4 py-2 text-white text-sm font-semibold rounded border border-white/40 hover:bg-white/10 transition-colors"
+        >
+          Track Application
+        </Link>
         <Link
           href="/login"
           className="px-5 py-2 bg-[#6c63ff] text-white text-sm font-semibold rounded hover:bg-[#5a52d5] transition-colors"
@@ -67,8 +73,15 @@ export default function Navbar() {
             </a>
           ))}
           <Link
+            href="/track"
+            className="px-5 py-2 border border-white/40 text-white text-sm font-semibold rounded text-center hover:bg-white/10 transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
+            Track Application
+          </Link>
+          <Link
             href="/login"
-            className="mt-2 px-5 py-2 bg-[#6c63ff] text-white text-sm font-semibold rounded text-center hover:bg-[#5a52d5] transition-colors"
+            className="px-5 py-2 bg-[#6c63ff] text-white text-sm font-semibold rounded text-center hover:bg-[#5a52d5] transition-colors"
             onClick={() => setMenuOpen(false)}
           >
             Login

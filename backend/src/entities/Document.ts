@@ -52,12 +52,12 @@ export class Document {
   @Column({ nullable: true })
   proposalId?: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: "uploadedById" })
-  uploadedBy!: User;
+  uploadedBy?: User;
 
-  @Column()
-  uploadedById!: string;
+  @Column({ nullable: true })
+  uploadedById?: string;
 
   @CreateDateColumn()
   createdAt!: Date;

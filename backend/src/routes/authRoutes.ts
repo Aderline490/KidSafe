@@ -13,6 +13,7 @@ import { verifyInvite } from "../controllers/inviteController";
 import { authenticate } from "../middleware/auth";
 import {
   registerValidation,
+  registerStaffValidation,
   loginValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
@@ -22,7 +23,7 @@ const router = Router();
 
 // Public routes
 router.post("/register", registerValidation, register);
-router.post("/register-staff", registerValidation, registerStaff);
+router.post("/register-staff", registerStaffValidation, registerStaff);
 router.get("/verify-invite", verifyInvite);
 router.post("/login", loginValidation, login);
 router.post("/verify-email", verifyEmail);

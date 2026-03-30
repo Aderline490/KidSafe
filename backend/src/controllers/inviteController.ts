@@ -68,21 +68,25 @@ export const sendInvite = async (
     const roleLabel = role.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     const registerUrl = `${process.env.FRONTEND_URL}/register/staff?token=${token}`;
 
-    await sendEmail(
-      email,
-      `You've been invited to join KidSafe as ${roleLabel}`,
-      `
-      <div style="font-family:sans-serif;max-width:500px;margin:auto">
-        <h2 style="color:#6c63ff">You're invited to KidSafe</h2>
-        <p>You have been invited by <strong>${req.user?.firstName} ${req.user?.lastName}</strong> to join KidSafe as a <strong>${roleLabel}</strong>.</p>
-        <p>Click the button below to complete your registration:</p>
-        <a href="${registerUrl}" style="display:inline-block;padding:12px 28px;background:#6c63ff;color:white;text-decoration:none;border-radius:8px;font-weight:bold;margin:16px 0">
-          Accept Invitation
-        </a>
-        <p style="color:#888;font-size:13px">This invite link expires in 48 hours. If you weren't expecting this, you can ignore this email.</p>
-      </div>
-      `
-    );
+    try {
+      await sendEmail(
+        email,
+        `You're invited to join KidSafe as ${roleLabel}`,
+        `
+        <div style="font-family:sans-serif;max-width:500px;margin:auto">
+          <h2 style="color:#6c63ff">You're invited to KidSafe</h2>
+          <p>You have been invited by <strong>${req.user?.firstName} ${req.user?.lastName}</strong> to join KidSafe as a <strong>${roleLabel}</strong>.</p>
+          <p>Click the button below to complete your registration:</p>
+          <a href="${registerUrl}" style="display:inline-block;padding:12px 28px;background:#6c63ff;color:white;text-decoration:none;border-radius:8px;font-weight:bold;margin:16px 0">
+            Accept Invitation
+          </a>
+          <p style="color:#888;font-size:13px">This invite link expires in 48 hours. If you weren't expecting this, you can ignore this email.</p>
+        </div>
+        `
+      );
+    } catch (emailErr) {
+      console.error("Invite email failed (invite still saved):", emailErr);
+    }
 
     res.status(201).json({
       message: `Invite sent to ${email}`,

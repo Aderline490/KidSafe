@@ -12,6 +12,15 @@ import {
   ChevronRight,
   Users,
   ShieldCheck,
+  Search,
+  ClipboardList,
+  UserCircle,
+  CalendarCheck,
+  FolderOpen,
+  Stethoscope,
+  Scale,
+  Award,
+  Building2,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -28,7 +37,7 @@ interface NavItem {
   children?: NavChild[];
 }
 
-const baseNavItems: NavItem[] = [
+const staffNavItems: NavItem[] = [
   { label: "Overview", href: "/overview", icon: LayoutDashboard },
   { label: "Kids", href: "/kids", icon: Baby },
   {
@@ -48,15 +57,67 @@ const adminNavItems: NavItem[] = [
   { label: "Staff", href: "/staff", icon: Users },
 ];
 
+const parentNavItems: NavItem[] = [
+  { label: "Overview", href: "/overview", icon: LayoutDashboard },
+  { label: "Browse Children", href: "/explore", icon: Search },
+  { label: "My Applications", href: "/my-applications", icon: ClipboardList },
+  { label: "My Reports", href: "/my-reports", icon: BarChart3 },
+];
+
+const socialWorkerNavItems: NavItem[] = [
+  { label: "Overview", href: "/overview", icon: LayoutDashboard },
+  { label: "Cases", href: "/requests", icon: FolderOpen },
+  { label: "Home Visits", href: "/home-visits", icon: CalendarCheck },
+  { label: "Children", href: "/kids", icon: Baby },
+  { label: "Reports", href: "/reports", icon: BarChart3 },
+];
+
+const dcNavItems: NavItem[] = [
+  { label: "Overview", href: "/overview", icon: LayoutDashboard },
+  { label: "Requests", href: "/requests", icon: Scale },
+  { label: "Kids", href: "/kids", icon: Baby },
+  { label: "Reports", href: "/reports", icon: BarChart3 },
+];
+
+const ncdaNavItems: NavItem[] = [
+  { label: "Overview", href: "/overview", icon: LayoutDashboard },
+  { label: "Requests", href: "/requests", icon: Award },
+  { label: "Kids", href: "/kids", icon: Baby },
+  { label: "Reports", href: "/reports", icon: BarChart3 },
+];
+
+const orphanageNavItems: NavItem[] = [
+  { label: "Overview", href: "/overview", icon: LayoutDashboard },
+  { label: "Children", href: "/kids", icon: Baby },
+  { label: "Proposals", href: "/requests", icon: ClipboardList },
+  { label: "Reports", href: "/reports", icon: BarChart3 },
+];
+
 export default function Sidebar() {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const isAdmin = user?.role === "system_admin";
-  const navItems = isAdmin
-    ? [...baseNavItems, ...adminNavItems]
-    : baseNavItems;
+  const isParent = user?.role === "adoptive_family";
+  const isSocialWorker = user?.role === "social_worker";
+  const isDC = user?.role === "district_commissioner";
+  const isNcda = user?.role === "ncda_official";
+  const isOrphanageAdmin = user?.role === "orphanage_admin";
+
+  const navItems = isParent
+    ? parentNavItems
+    : isSocialWorker
+    ? socialWorkerNavItems
+    : isDC
+    ? dcNavItems
+    : isNcda
+    ? ncdaNavItems
+    : isOrphanageAdmin
+    ? orphanageNavItems
+    : isAdmin
+    ? [...staffNavItems, ...adminNavItems]
+    : staffNavItems;
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
@@ -75,11 +136,41 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* Admin badge */}
+      {/* Role badge */}
       {isAdmin && (
         <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg">
           <ShieldCheck className="h-4 w-4 text-primary" />
           <span className="text-xs font-semibold text-primary">System Admin</span>
+        </div>
+      )}
+      {isParent && (
+        <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg">
+          <UserCircle className="h-4 w-4 text-green-600" />
+          <span className="text-xs font-semibold text-green-700">Adoptive Family</span>
+        </div>
+      )}
+      {isSocialWorker && (
+        <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg">
+          <Stethoscope className="h-4 w-4 text-blue-600" />
+          <span className="text-xs font-semibold text-blue-700">Social Worker</span>
+        </div>
+      )}
+      {isDC && (
+        <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 bg-orange-50 rounded-lg">
+          <Scale className="h-4 w-4 text-orange-600" />
+          <span className="text-xs font-semibold text-orange-700">District Commissioner</span>
+        </div>
+      )}
+      {isNcda && (
+        <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 bg-indigo-50 rounded-lg">
+          <Award className="h-4 w-4 text-indigo-600" />
+          <span className="text-xs font-semibold text-indigo-700">NCDA Official</span>
+        </div>
+      )}
+      {isOrphanageAdmin && (
+        <div className="mx-3 mt-3 flex items-center gap-2 px-3 py-2 bg-pink-50 rounded-lg">
+          <Building2 className="h-4 w-4 text-pink-600" />
+          <span className="text-xs font-semibold text-pink-700">Orphanage Admin</span>
         </div>
       )}
 
@@ -161,12 +252,22 @@ export default function Sidebar() {
       {/* User info + Logout */}
       <div className="border-t border-border p-3 space-y-1">
         {user && (
-          <div className="px-4 py-2">
-            <p className="text-sm font-semibold text-foreground truncate">
-              {user.firstName} {user.lastName}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-          </div>
+          <Link
+            href="/my-profile"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#6c63ff]/10 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-bold text-[#6c63ff]">
+                {user.firstName?.[0]}{user.lastName?.[0]}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                {user.firstName} {user.lastName}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            </div>
+          </Link>
         )}
         <button
           onClick={logout}

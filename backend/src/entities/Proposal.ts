@@ -13,7 +13,6 @@ import { Child } from "./Child";
 import { Document } from "./Document";
 
 export enum ProposalStatus {
-  DRAFT = "draft",
   SUBMITTED = "submitted",
   HOME_VISIT_SCHEDULED = "home_visit_scheduled",
   HOME_VISIT_COMPLETED = "home_visit_completed",
@@ -31,17 +30,44 @@ export enum ProposalStatus {
   WITHDRAWN = "withdrawn",
 }
 
+export enum AdoptionType {
+  PERMANENT = "permanent",
+  FOSTER_CARE = "foster_care",
+  EMERGENT = "emergent",
+}
+
 @Entity("proposals")
 export class Proposal {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: "familyId" })
-  family!: User;
+  // Auto-generated human-readable number e.g. KS-2024-00142
+  @Column({ unique: true })
+  applicationNumber!: string;
+
+  // Applicant info — stored directly so no account is needed
+  @Column()
+  applicantFirstName!: string;
 
   @Column()
-  familyId!: string;
+  applicantLastName!: string;
+
+  @Column()
+  applicantEmail!: string;
+
+  @Column({ nullable: true })
+  applicantPhone?: string;
+
+  @Column({ length: 16 })
+  applicantNationalId!: string;
+
+  // Optional link to a user account (set when applicant is invited to create one at stage 2)
+  @Column({ nullable: true })
+  familyId?: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: "familyId" })
+  family?: User;
 
   @ManyToOne(() => Child)
   @JoinColumn({ name: "childId" })
@@ -53,9 +79,16 @@ export class Proposal {
   @Column({
     type: "enum",
     enum: ProposalStatus,
-    default: ProposalStatus.DRAFT,
+    default: ProposalStatus.SUBMITTED,
   })
   status!: ProposalStatus;
+
+  @Column({
+    type: "enum",
+    enum: AdoptionType,
+    default: AdoptionType.PERMANENT,
+  })
+  adoptionType!: AdoptionType;
 
   @Column({ type: "text", nullable: true })
   motivation?: string;

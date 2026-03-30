@@ -5,6 +5,10 @@ import dotenv from "dotenv";
 import { AppDataSource } from "./config/database";
 import authRoutes from "./routes/authRoutes";
 import inviteRoutes from "./routes/inviteRoutes";
+import childRoutes from "./routes/childRoutes";
+import proposalRoutes from "./routes/proposalRoutes";
+import staffRoutes from "./routes/staffRoutes";
+import reportRoutes from "./routes/reportRoutes";
 
 dotenv.config();
 
@@ -36,13 +40,10 @@ app.get("/api/health", (_req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/invites", inviteRoutes);
-// TODO: Routes will be added per feature branch
-// app.use("/api/children", childRoutes);
-// app.use("/api/proposals", proposalRoutes);
-// app.use("/api/home-visits", homeVisitRoutes);
-// app.use("/api/approvals", approvalRoutes);
-// app.use("/api/notifications", notificationRoutes);
-// app.use("/api/reports", reportRoutes);
+app.use("/api/children", childRoutes);
+app.use("/api/proposals", proposalRoutes);
+app.use("/api/staff", staffRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Database connection & server start
 AppDataSource.initialize()
