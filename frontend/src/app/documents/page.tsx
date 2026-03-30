@@ -294,7 +294,7 @@ function DocUploadForm() {
 
               <div className="space-y-2">
                 <Label>Document Type</Label>
-                <Select value={selectedType} onValueChange={(v) => setSelectedType(v as DocTypeValue)}>
+                <Select value={selectedType} onValueChange={(v) => setSelectedType((v ?? "") as DocTypeValue)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
