@@ -93,7 +93,7 @@ export default function RegisterPage() {
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
         <p className="text-muted-foreground text-sm">
-          Join Homely to get started
+          Join KidSafe to get started
         </p>
       </CardHeader>
       <form onSubmit={handleSubmit}>

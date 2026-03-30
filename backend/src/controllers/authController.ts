@@ -71,9 +71,9 @@ export const register = async (
     try {
       await sendEmail(
         email,
-        "Verify your Homely account",
+        "Verify your KidSafe account",
         `
-        <h2>Welcome to Homely, ${firstName}!</h2>
+        <h2>Welcome to KidSafe, ${firstName}!</h2>
         <p>Please verify your email by clicking the link below:</p>
         <a href="${verificationUrl}" style="display:inline-block;padding:12px 24px;background:#6c63ff;color:white;text-decoration:none;border-radius:8px;">
           Verify Email
@@ -254,7 +254,7 @@ export const forgotPassword = async (
     try {
       await sendEmail(
         email,
-        "Reset your Homely password",
+        "Reset your KidSafe password",
         `
         <h2>Password Reset Request</h2>
         <p>Click the link below to reset your password:</p>

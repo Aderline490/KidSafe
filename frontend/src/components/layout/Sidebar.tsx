@@ -60,7 +60,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center px-6 border-b border-border">
         <Link href="/overview" className="text-2xl font-bold italic text-primary">
-          Homely
+          KidSafe
         </Link>
       </div>
 
