@@ -20,7 +20,7 @@ export const sendEmail = async (
 ): Promise<void> => {
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || "noreply@homely.com",
+      from: process.env.SMTP_FROM || "noreply@kidsafe.com",
       to,
       subject,
       html,
